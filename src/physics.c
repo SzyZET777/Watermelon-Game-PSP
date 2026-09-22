@@ -2,6 +2,7 @@
 #include <pspdisplay.h>
 #include <pspdebug.h>
 #include <pspctrl.h>
+#include <pspfpu.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -16,29 +17,6 @@
 
 float radToDeg(float rad) {
     return (rad * 180.0f) /  M_PI;
-}
-
-
-float fastSqrtApprox(float x) {
-    unsigned int i = *(unsigned int*)&x;
-    i = (i >> 1) + 0x1fbb4000; 
-    return *(float*)&i;
-}
-
-
-float fastInvSqrtApprox(float number) {
-    long i;
-    float x2, y;
-    const float threehalfs = 1.5F;
-
-    x2 = number * 0.5F;
-    y  = number;
-    i  = * ( long * ) &y; // Evil floating point bit level hacking
-    i  = 0x5f3759df - ( i >> 1 ); // What the... ?
-    y  = * ( float * ) &i;
-    y  = y * ( threehalfs - ( x2 * y * y ) );
-
-    return y;
 }
 
 
@@ -160,13 +138,11 @@ void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
 
     float dy = balls[j].y - balls[i].y;
     float dx = balls[j].x - balls[i].x;
-    float dist = fastSqrtApprox(dx*dx + dy*dy);
 
-    if (dist == 0.0f) {
-        dx = 0.1f;
-        dist = 0.1f; 
-    }
+    float distSq = dx*dx + dy*dy;
+    if (distSq == 0.0f) distSq = 0.0001;
 
+    float dist = pspFpuSqrt(distSq);
     float penetrationDepth = balls[i].r + balls[j].r - dist;
 
     if (penetrationDepth > 0.0f) {
@@ -180,8 +156,9 @@ void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
 
             float distX = balls[k].x - ((b1.x + b2.x) / 2.0f);
             float distY = balls[k].y - ((b1.y + b2.y) / 2.0f);
-            float totalDist = fastSqrtApprox((distX*distX)+(distY*distY));
-            float totalInvDist = 1.0f / totalDist;
+            float distSq = (distX*distX)+(distY*distY);
+            if (distSq == 0.0f) distSq = 0.0001;
+            float totalInvDist = pspFpuRsqrt(distSq);
             float totalForce = MergePushForce * totalInvDist;
             if (totalForce > 0.25f * MergePushForce) {
                 totalForce = 0.25f * MergePushForce;
@@ -227,13 +204,13 @@ void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
 void resolveBallColl(struct Ball * b1, struct Ball * b2) {
     float dy = b2->y-b1->y;
     float dx = b2->x-b1->x;
-    float dist = fastSqrtApprox(dx*dx + dy*dy);
-    float invDist = fastInvSqrtApprox(dx*dx + dy*dy);
 
-    if (dist == 0.0f) {
-        dx = 0.1f;
-        dist = 0.1f; 
-    }
+    float distSq = dx*dx + dy*dy;
+
+    if (distSq == 0.0f) distSq = 0.0001;
+
+    float dist = pspFpuSqrt(distSq);
+    float invDist = pspFpuRsqrt(distSq);
 
     float penetrationDepth = b1->r + b2->r - dist;
 

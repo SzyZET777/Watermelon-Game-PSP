@@ -20,14 +20,21 @@ void drawBall(struct Ball * b, Texture2D fruitsTexture){
     Vector2 origin = {rInPixels+1.0f, rInPixels+1.0f};
 
     if (b->y + b->r < BoxFloorY - BoxTopLineHeight && b->timeOutside >= 1) {
-        if (b->typeIdx > 5) {
-            DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, RED);
+        float ballTintPercent = fabsf(sinf(M_PI * b->timeOutside));
+        Color ballTint = RED;
+        if (b->timeOutside < 3) {
+            ballTint.r = WHITE.r * (1.0f - ballTintPercent) + RED.r * (ballTintPercent);
+            ballTint.g = WHITE.g * (1.0f - ballTintPercent) + RED.g * (ballTintPercent);
+            ballTint.b = WHITE.b * (1.0f - ballTintPercent) + RED.b * (ballTintPercent);
+        }
+        if (b->typeIdx > 7) {
+            DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, ballTint);
             DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
         } else {
-            DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), RED);
+            DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), ballTint);
         }
     } else {
-        if (b->typeIdx > 5) {
+        if (b->typeIdx > 7) {
             DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, BallColors[b->typeIdx]);
             DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
         } else {
