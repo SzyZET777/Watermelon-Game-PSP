@@ -1,4 +1,4 @@
 # Watermelon Game PSP
 A port of Watermelon Game (Suika) for Sony PlayStation Portable (PSP) made with raylib library
 
-<img width="1273" height="797" alt="Screenshot 2026-09-19 at 23 18 21" src="https://github.com/user-attachments/assets/68821492-d267-46a7-9327-2f314bd9a165" />
+<img width="1273" height="794" alt="Screenshot 2026-09-22 at 14 33 34" src="https://github.com/user-attachments/assets/d16c3b72-10d0-4a17-9736-45160a6490c2" />
