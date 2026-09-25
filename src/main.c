@@ -39,6 +39,30 @@ int main(void) {
     Texture2D fruitsTexture = LoadTexture("WatermelonGame.png");
     SetTextureFilter(fruitsTexture, TEXTURE_FILTER_BILINEAR); 
 
+    {
+        FILE* highscoreFile = fopen("highscore.txt", "rb+");
+        if (highscoreFile == NULL) {
+            fclose(highscoreFile);
+            FILE* highscoreFile = fopen("highscore.txt", "rb+");
+            if (highscoreFile == NULL) {
+                highscoreFile = fopen("highscore.txt", "wb+");
+                fclose(highscoreFile);
+                highscoreFile = fopen("highscore.txt", "rb+");
+                if (highscoreFile == NULL) {
+                    TraceLog(LOG_INFO, "Can't create \"highscore.txt\" file");
+                    CloseWindow();
+                    return 0;
+                }
+            }
+        }
+        int highscore = 0;
+        int freadCnt = fread(&highscore, sizeof(highscore), 1, highscoreFile);
+        if (freadCnt == 0) {
+            fwrite(&highscore, sizeof(highscore), 1, highscoreFile);
+        }
+        fclose(highscoreFile);
+    }
+
     SetTargetFPS(30);
     initRng();
 
@@ -52,6 +76,7 @@ int main(void) {
         initBall(&balls[i]);
     }
 
+    /*
     for (int i = 0; i < 64; i++) {
         initBall(&balls[i]);
         balls[BallsN] = heldBall;
@@ -59,6 +84,7 @@ int main(void) {
         BallsN++;
         randomizeRadius(&heldBall);
     }
+    */
 
     while (!WindowShouldClose()) {
         DeltaTime = (((float) GetFrameTime()) * InvTicksPerFrame);
@@ -66,7 +92,6 @@ int main(void) {
         // TraceLog(LOG_INFO," FPS = %f\n", 1.0f/(0.0000001+(float)GetFrameTime()));
 
         sceCtrlReadBufferPositive(&Pad, 1);
-
         if (GameOver) {
             if (Pad.Buttons & PSP_CTRL_START) {
                 timeSinceLastBall = 0.5;
@@ -143,19 +168,31 @@ int main(void) {
 
                     if (b->timeOutside >= 3) {
                         GameOver = true;
+                        FILE* highscoreFile = fopen("highscore.txt", "rb+");
+                        int highscore = 0;
+                        fread(&highscore, sizeof(highscore), 1, highscoreFile);
+                        if (Score > highscore) {
+                            fwrite(&Score, sizeof(Score), 1, highscoreFile);
+                        }
+                        fclose(highscoreFile);
                     }
                 }
 
-                sortBalls(balls, BallsN); // Should improve collisions resolving
-            
                 for (int i = 0; i < BallsN; i++) {
-                    struct Ball * b1 = &(balls[i]);
-
-                    for (int pass = 0; pass < CollPasses; pass++) {
+                    for (int j = i+1; j < BallsN; j++) {
+                        tryCombiningBalls(balls, i, j, &BallsN);
+                    }
+                }
+                
+                // It can improve physics at a cost of performance
+                sortBalls(balls, BallsN);
+            
+                for (int pass = 0; pass < CollPasses; pass++) {
+                    for (int i = 0; i < BallsN; i++) {
+                        struct Ball * b1 = &(balls[i]);
                         for (int j = i+1; j < BallsN; j++) {
                             struct Ball * b2 = &(balls[j]);
 
-                            tryCombiningBalls(balls, i, j, &BallsN);
                             resolveBallColl(b1, b2);
 
                             resolveFloorColl(b1);
@@ -186,10 +223,16 @@ int main(void) {
                 drawBall(b, fruitsTexture);
             }
 
-            DrawText(TextFormat("Score: %08i", DispScore), 260, 16, 20, BLACK);
-            
+            int highscore = 0;
+            FILE* highscoreFile = fopen("highscore.txt", "rb");
+            fread(&highscore, sizeof(highscore), 1, highscoreFile);
+            fclose(highscoreFile);
+
+            DrawText(TextFormat("High Score: %06i", highscore), 260, 16, 20, GRAY);
+            DrawText(TextFormat("\nScore: %06i", DispScore), 260, 16, 20, BLACK);
+
             if (GameOver) {
-                DrawText(TextFormat("\nGame Over\nPress (START)\nto restart", DispScore), 260, 16, 20, RED);
+                DrawText(TextFormat("\n\n\nGame Over\nPress (START)\nto restart", DispScore), 260, 16, 20, RED);
             }
         }
         EndDrawing();
