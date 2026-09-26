@@ -43,17 +43,14 @@ int main(void) {
         FILE* highscoreFile = fopen("highscore.txt", "rb+");
         if (highscoreFile == NULL) {
             fclose(highscoreFile);
-            FILE* highscoreFile = fopen("highscore.txt", "rb+");
+            highscoreFile = fopen("highscore.txt", "wb+");
             if (highscoreFile == NULL) {
-                highscoreFile = fopen("highscore.txt", "wb+");
-                fclose(highscoreFile);
-                highscoreFile = fopen("highscore.txt", "rb+");
-                if (highscoreFile == NULL) {
-                    TraceLog(LOG_INFO, "Can't create \"highscore.txt\" file");
-                    CloseWindow();
-                    return 0;
-                }
+                TraceLog(LOG_INFO, "Can't create \"highscore.txt\" file");
+                CloseWindow();
+               return 0;
             }
+            fclose(highscoreFile);
+            highscoreFile = fopen("highscore.txt", "rb+");
         }
         int highscore = 0;
         int freadCnt = fread(&highscore, sizeof(highscore), 1, highscoreFile);
