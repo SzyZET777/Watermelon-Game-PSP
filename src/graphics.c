@@ -15,7 +15,7 @@
 
 void drawBall(struct Ball * b, Texture2D fruitsTexture){
     float rInPixels = b->r * PPU;
-    Rectangle source = {FruitTextureOffsets[b->typeIdx], 0.0f, FruitTextureWH[b->typeIdx], FruitTextureWH[b->typeIdx]};
+    Rectangle source = {FruitTextureOffsetX[b->typeIdx], FruitTextureOffsetY[b->typeIdx], FruitTextureWH[b->typeIdx], FruitTextureWH[b->typeIdx]};
     Rectangle dest = {b->x*PPU, b->y*PPU, FruitTextureWH[b->typeIdx], FruitTextureWH[b->typeIdx]};
     Vector2 origin = {rInPixels+1.0f, rInPixels+1.0f};
 

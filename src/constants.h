@@ -29,7 +29,8 @@ static const Color BallColors [] = {DARKBLUE,RED,LIME,GOLD,ORANGE,MAROON,PINK,BR
 static const int BallTypesN = sizeof(BallRadius) / sizeof(BallRadius[0]);
 static const int BallScores [] = {1,3,7,9,13,21,27,34,44,62,90};
 
-static const int FruitTextureOffsets [] = {0,16,48,80,112,176,240,304,432,560};
+static const int FruitTextureOffsetX [] = {0,0,0,0,0,128,128,256,256,384,384};
+static const int FruitTextureOffsetY [] = {0,32,64,128,192,0,128,0,128,0,128};
 static const int FruitTextureWH [] = {16,32,32,32,64,64,64,128,128,128,128};
 
 // #define DeltaTime (((float) GetFrameTime()) / TicksPerFrame)

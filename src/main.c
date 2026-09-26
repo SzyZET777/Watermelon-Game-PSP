@@ -42,12 +42,11 @@ int main(void) {
     {
         FILE* highscoreFile = fopen("highscore.txt", "rb+");
         if (highscoreFile == NULL) {
-            fclose(highscoreFile);
             highscoreFile = fopen("highscore.txt", "wb+");
             if (highscoreFile == NULL) {
                 TraceLog(LOG_INFO, "Can't create \"highscore.txt\" file");
                 CloseWindow();
-               return 0;
+                return 0;
             }
             fclose(highscoreFile);
             highscoreFile = fopen("highscore.txt", "rb+");
@@ -55,6 +54,7 @@ int main(void) {
         int highscore = 0;
         int freadCnt = fread(&highscore, sizeof(highscore), 1, highscoreFile);
         if (freadCnt == 0) {
+            fseek(highscoreFile, 0, SEEK_SET);
             fwrite(&highscore, sizeof(highscore), 1, highscoreFile);
         }
         fclose(highscoreFile);
@@ -169,6 +169,7 @@ int main(void) {
                         int highscore = 0;
                         fread(&highscore, sizeof(highscore), 1, highscoreFile);
                         if (Score > highscore) {
+                            fseek(highscoreFile, 0, SEEK_SET);
                             fwrite(&Score, sizeof(Score), 1, highscoreFile);
                         }
                         fclose(highscoreFile);
