@@ -1,21 +1,26 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define ATTR_PSP_WIDTH 480
+#define ATTR_PSP_HEIGHT 272
+
 static const float PixelsPerUnit = 30.0f;
 static const float PPU = PixelsPerUnit;
-static const float BoxTopMargin = 1.0f;
-static const float BoxLeftMargin = 1.0f;
 static const float BoxHeight = 7.6f;
 static const float BoxTopLineHeight = 6.7f;
 static const float BoxWidth = 6.5f;
+static const float BoxTopMargin = 1.0f;
+static const float BoxLeftMargin = (ATTR_PSP_WIDTH/PixelsPerUnit/2.0f) - (BoxWidth/2.0f);
 static const float BoxFloorY = BoxTopMargin + BoxHeight;
 static const float TextLeftMargin = 2.0;
+
+static const Color BackgroundColor = {244,209,148};
 
 static const float AnalogDeadzonePercent = 0.15;
 
 static const float TimeToFall = 1.0f;
 static const float Gravity = 2.0f * BoxHeight / (TimeToFall*TimeToFall);
-static const float AirResistance = 4.0f;
+static const float AirResistance = 4.5f;
 static const float PenetrationCorrectionPercent = 0.75f;
 static const float MergePushForce = 5.0f;
 

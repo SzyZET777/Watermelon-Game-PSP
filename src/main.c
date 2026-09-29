@@ -18,16 +18,13 @@
 PSP_MODULE_INFO("Watermelon Game", 0, 1, 1);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
 
-#define ATTR_PSP_WIDTH 480
-#define ATTR_PSP_HEIGHT 272
-
 SceCtrlData Pad;
 
 float timerStart, timerEnd;
 float DeltaTime = 0.0f;
 int Score = 0;
 int DispScore = 0;
-bool GameOver = false;
+bool GameOver = true;
 
 
 int main(void) {
@@ -63,12 +60,13 @@ int main(void) {
     SetTargetFPS(30);
     initRng();
 
-    struct Ball heldBall;
+    struct Ball heldBall, nextBall;
     struct Ball balls [BallsLimit];
     float timeSinceLastBall = 0.5;
     int BallsN = 0;
 
     initBall(&heldBall);
+    initBall(&nextBall);
     for (int i = 0; i < BallsLimit; i++) {
         initBall(&balls[i]);
     }
@@ -94,6 +92,7 @@ int main(void) {
                 timeSinceLastBall = 0.5;
                 BallsN = 0;
                 initBall(&heldBall);
+                initBall(&nextBall);
                 for (int i = 0; i < BallsLimit; i++) {
                     initBall(&balls[i]);
                 }
@@ -123,7 +122,10 @@ int main(void) {
                     balls[BallsN] = heldBall;
                     balls[BallsN].x += rngf(-0.01f, 0.01f);
                     BallsN++;
-                    randomizeRadius(&heldBall);
+                    nextBall.x = heldBall.x;
+                    nextBall.y = heldBall.y;
+                    heldBall = nextBall;
+                    randomizeRadius(&nextBall);
                 } else if (leftPressed && !rightPressed) {
                     heldBall.x -= analogPercent * 5 * DeltaTime * TicksPerFrame;
                 } else if (!leftPressed && rightPressed) {
@@ -210,7 +212,13 @@ int main(void) {
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
+            // ClearBackground(BackgroundColor);
             drawBox();
+
+            DrawText(TextFormat("Next"), 390, 16, 20, BLACK);
+            nextBall.x = BoxLeftMargin + BoxWidth + 2.51f;
+            nextBall.y = BoxTopMargin + 0.4f + nextBall.r;
+            drawBall(&nextBall, fruitsTexture);
 
             if (timeSinceLastBall >= 0.5) {
                 drawBall(&heldBall, fruitsTexture);
@@ -226,11 +234,11 @@ int main(void) {
             fread(&highscore, sizeof(highscore), 1, highscoreFile);
             fclose(highscoreFile);
 
-            DrawText(TextFormat("High Score: %06i", highscore), 260, 16, 20, GRAY);
-            DrawText(TextFormat("\nScore: %06i", DispScore), 260, 16, 20, BLACK);
+            DrawText(TextFormat("Score\n %08i", DispScore), 16, 16, 20, BLACK);
+            DrawText(TextFormat("\n\nBest\n %08i", highscore), 16, 16, 20, GRAY);
 
             if (GameOver) {
-                DrawText(TextFormat("\n\n\nGame Over\nPress (START)\nto restart", DispScore), 260, 16, 20, RED);
+                DrawText(TextFormat("\n\n\n\n\nGame Over\nPress\n(START)\nto restart", DispScore), 16, 16, 20, RED);
             }
         }
         EndDrawing();
