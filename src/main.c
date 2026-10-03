@@ -24,7 +24,7 @@ float timerStart, timerEnd;
 float DeltaTime = 0.0f;
 int Score = 0;
 int DispScore = 0;
-bool GameOver = true;
+bool GameOver = false;
 
 
 int main(void) {
@@ -72,7 +72,7 @@ int main(void) {
     }
 
     /*
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 128; i++) {
         initBall(&balls[i]);
         balls[BallsN] = heldBall;
         balls[BallsN].x = rngf(BoxLeftMargin, BoxLeftMargin+BoxWidth);

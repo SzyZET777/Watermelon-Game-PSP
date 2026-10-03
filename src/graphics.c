@@ -27,19 +27,13 @@ void drawBall(struct Ball * b, Texture2D fruitsTexture){
             ballTint.g = WHITE.g * (1.0f - ballTintPercent) + RED.g * (ballTintPercent);
             ballTint.b = WHITE.b * (1.0f - ballTintPercent) + RED.b * (ballTintPercent);
         }
-        if (b->typeIdx > 8) {
-            DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, ballTint);
-            DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
-        } else {
-            DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), ballTint);
-        }
+        // DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, ballTint);
+        // DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
+        DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), ballTint);
     } else {
-        if (b->typeIdx > 8) {
-            DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, BallColors[b->typeIdx]);
-            DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
-        } else {
-            DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), WHITE);
-        }
+        // DrawCircle(b->x * PPU, b->y * PPU, b->r * PPU, BallColors[b->typeIdx]);
+        // DrawCircleLines(b->x * PPU, b->y * PPU, b->r * PPU, BLACK);
+        DrawTexturePro(fruitsTexture, source, dest, origin, radToDeg(b->rot), WHITE);
     }
 }
 
