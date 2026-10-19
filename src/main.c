@@ -1,8 +1,13 @@
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+
 #include <pspkernel.h>
 #include <pspdisplay.h>
 #include <pspdebug.h>
 #include <pspctrl.h>
 #include <pspgu.h>
+#include <pspaudio.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -22,9 +27,12 @@ SceCtrlData Pad;
 
 float timerStart, timerEnd;
 float DeltaTime = 0.0f;
+int initialBalls = 0;
 int Score = 0;
 int DispScore = 0;
+int AudioVolume = 64;
 bool GameOver = false;
+bool SelectPressed = false;
 
 
 int main(void) {
@@ -32,8 +40,19 @@ int main(void) {
     const int screenHeight = ATTR_PSP_HEIGHT;
 
     InitWindow(screenWidth, screenHeight, "Watermelon Game");
+    SDL_Init(SDL_INIT_AUDIO);
+    Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024);
+    
+    Mix_Chunk* popSfx = Mix_LoadWAV("Resources/Pop.wav");
+    Mix_Chunk* whooshSfx = Mix_LoadWAV("Resources/Whoosh.wav");
 
-    Texture2D fruitsTexture = LoadTexture("WatermelonGame.png");
+    Mix_Music *firstDropMusic = Mix_LoadMUS("Resources/Watermelon Game - First Drop.mp3");
+    Mix_Music *smallFruitsMusic = Mix_LoadMUS("Resources/Watermelon Game - Small Fruits.mp3");
+
+    Mix_VolumeMusic(AudioVolume);
+    Mix_PlayMusic(firstDropMusic, 0);
+    
+    Texture2D fruitsTexture = LoadTexture("Resources/WatermelonGame.png");
     SetTextureFilter(fruitsTexture, TEXTURE_FILTER_BILINEAR); 
 
     {
@@ -57,7 +76,7 @@ int main(void) {
         fclose(highscoreFile);
     }
 
-    SetTargetFPS(30);
+    SetTargetFPS(60);
     initRng();
 
     struct Ball heldBall, nextBall;
@@ -71,22 +90,41 @@ int main(void) {
         initBall(&balls[i]);
     }
 
-    /*
-    for (int i = 0; i < 128; i++) {
+    for (int i = 0; i < initialBalls; i++) {
         initBall(&balls[i]);
         balls[BallsN] = heldBall;
         balls[BallsN].x = rngf(BoxLeftMargin, BoxLeftMargin+BoxWidth);
         BallsN++;
         randomizeRadius(&heldBall);
     }
-    */
 
     while (!WindowShouldClose()) {
+        timerStart = sceKernelGetSystemTimeLow();
+
+        if (Mix_PlayingMusic() == 0) {
+            Mix_PlayMusic(smallFruitsMusic, 0);
+        }
+
         DeltaTime = (((float) GetFrameTime()) * InvTicksPerFrame);
         // TraceLog(LOG_INFO," DeltaTime = %f\n", DeltaTime);
         // TraceLog(LOG_INFO," FPS = %f\n", 1.0f/(0.0000001+(float)GetFrameTime()));
 
-        sceCtrlReadBufferPositive(&Pad, 1);
+        sceCtrlPeekBufferPositive(&Pad, 1);
+
+        if ((Pad.Buttons & PSP_CTRL_SELECT) && !SelectPressed) {
+            SelectPressed = true;
+            if (AudioVolume == 0) {
+                AudioVolume = 64;
+            } else if (AudioVolume == 64) {
+                AudioVolume = 128;
+            } else {
+                AudioVolume = 0;
+            }
+            Mix_VolumeMusic(AudioVolume);
+        } else if (!(Pad.Buttons & PSP_CTRL_SELECT)) {
+            SelectPressed = false;
+        }
+
         if (GameOver) {
             if (Pad.Buttons & PSP_CTRL_START) {
                 timeSinceLastBall = 0.5;
@@ -118,6 +156,7 @@ int main(void) {
                 }
 
                 if ((Pad.Buttons & PSP_CTRL_LTRIGGER && Pad.Buttons & PSP_CTRL_RTRIGGER) || (Pad.Buttons & PSP_CTRL_CROSS) || (Pad.Buttons & PSP_CTRL_CIRCLE)) {
+                    Mix_PlayChannel(-1, whooshSfx, 0);
                     timeSinceLastBall = 0;
                     balls[BallsN] = heldBall;
                     balls[BallsN].x += rngf(-0.01f, 0.01f);
@@ -139,8 +178,6 @@ int main(void) {
 
             resolveLeftWallColl(&heldBall, false);
             resolveRightWallColl(&heldBall, false);
-
-            timerStart = sceKernelGetSystemTimeLow();
 
             for (int tick = 0; tick < TicksPerFrame; tick++) {
                 for (int i = 0; i < BallsN; i++) {
@@ -180,7 +217,9 @@ int main(void) {
 
                 for (int i = 0; i < BallsN; i++) {
                     for (int j = i+1; j < BallsN; j++) {
-                        tryCombiningBalls(balls, i, j, &BallsN);
+                        if (tryCombiningBalls(balls, i, j, &BallsN)) {
+                            Mix_PlayChannel(-1, popSfx, 0);
+                        }
                     }
                 }
                 
@@ -205,9 +244,10 @@ int main(void) {
                     }
                 }
             }
-            timerEnd = sceKernelGetSystemTimeLow();
-            TraceLog(LOG_INFO," Balls %i; Physics time: %f / %f\n", BallsN, (timerEnd-timerStart) / 1000.0f, 1000.0f * GetFrameTime());
         }
+
+        timerEnd = sceKernelGetSystemTimeLow();
+        TraceLog(LOG_INFO," Balls %i; Time before drawing: %f / %f\n", BallsN, (timerEnd-timerStart) / 1000.0f, 1000.0f * GetFrameTime());
 
         BeginDrawing();
         {
@@ -244,6 +284,18 @@ int main(void) {
         EndDrawing();
     }
 
+    Mix_HaltMusic();
+    Mix_HaltChannel(-1);
+
+    Mix_FreeChunk(popSfx);
+    Mix_FreeChunk(whooshSfx);
+    Mix_FreeMusic(firstDropMusic);
+    Mix_FreeMusic(smallFruitsMusic);
+
+    Mix_CloseAudio();
+    Mix_Quit();
+    SDL_Quit();
+    
     CloseWindow();
 
     return 0;

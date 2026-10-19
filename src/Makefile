@@ -8,7 +8,12 @@ ASFLAGS = $(CFLAGS)
 
 LIBDIR =
 LDFLAGS =
-LIBS= -lraylib -lpng -lz  -lglut -lGLU -lGL -lpspvfpu -lpspgu -lpspfpu
+LIBS= -lraylib \
+       -lSDL2_mixer -lmodplug -lvorbisfile -lvorbis -logg -lSDL2 \
+       -lpng -lz -lglut -lGLU -lGL \
+       -lpspvfpu -lpspgu -lpspfpu \
+       -lpspaudio -lpsphprm -lpspctrl -lpsppower -lpsprtc -lpspvram \
+       -lstdc++ -lm
 
 EXTRA_TARGETS = EBOOT.PBP
 PSP_EBOOT_TITLE = Watermelon Game

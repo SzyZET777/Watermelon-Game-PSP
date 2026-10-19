@@ -127,8 +127,8 @@ void resolveRightWallColl(struct Ball * b, bool rotate) {
 }
 
 
-void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
-    if (balls[i].typeIdx != balls[j].typeIdx) return;
+bool tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
+    if (balls[i].typeIdx != balls[j].typeIdx) return false;
 
     if (i > j) {
         int t = i;
@@ -191,13 +191,17 @@ void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN) {
             balls[i].vx = 0.0f; 
             balls[i].vy = 0.0f;
             balls[i].rot = 0.0f;
+            balls[i].timeOutside = 0.0f;
 
             for (int k = j; k < (*BallsN)-1; k++) {
                 balls[k] = balls[k+1];
             }
             (*BallsN)--;
         }
+        return true;
     }
+
+    return false;
 }
 
 

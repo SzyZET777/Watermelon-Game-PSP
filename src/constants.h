@@ -26,7 +26,7 @@ static const float MergePushForce = 5.0f;
 
 static const int BallsLimit = 512;
 static const int CollPasses = 4;
-static const int TicksPerFrame = 8;
+static const int TicksPerFrame = 4;
 static const float InvTicksPerFrame = 1.0f / ((float) TicksPerFrame);
 
 static const float BallRadius [] = {0.2f,0.25f,0.45f,0.5f,0.6f,0.75f,0.85f,1.05f,1.15f,1.45,1.7};

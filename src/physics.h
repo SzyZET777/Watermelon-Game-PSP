@@ -29,7 +29,7 @@ void moveBall(struct Ball * b);
 void resolveFloorColl(struct Ball * b);
 void resolveLeftWallColl(struct Ball * b, bool rotate);
 void resolveRightWallColl(struct Ball * b, bool rotate);
-void tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN);
+bool tryCombiningBalls(struct Ball balls[], int i, int j, int * BallsN);
 void resolveBallColl(struct Ball * b1, struct Ball * b2);
 
 #endif
