@@ -10,6 +10,14 @@ You must have CFW installed on your PSP - the game has been tested and works wit
 2. Extract the ZIP file
 3. Put the extracted folder into PSP/GAME directory on your memory stick
 
+## Controls
+- Use d-pad, analog stick or L/R buttons to move the fruit
+- Press X, O or L+R buttons to drop the fruit
+- Press START to restart after a game over
+- Press SELECT to change the volume of the music
+
+(PSP can't be turned off while this game is running, quit the game to be able to turn off the system)
+
 ## AI Usage
 I used AI to speed up learning how to use raylib and finding bugs in my code but I am against vibe coding.
 
