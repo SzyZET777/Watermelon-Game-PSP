@@ -17,6 +17,7 @@ LIBS= -lraylib \
 
 EXTRA_TARGETS = EBOOT.PBP
 PSP_EBOOT_TITLE = Watermelon Game
+PSP_EBOOT_ICON = Resources/ICON0.png
 
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak

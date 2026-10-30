@@ -8,6 +8,7 @@
 #include <pspctrl.h>
 #include <pspgu.h>
 #include <pspaudio.h>
+#include <psppower.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -30,6 +31,7 @@ float DeltaTime = 0.0f;
 int initialBalls = 0;
 int Score = 0;
 int DispScore = 0;
+int MusicTrack = 0;
 int AudioVolume = 64;
 bool GameOver = false;
 bool SelectPressed = false;
@@ -39,9 +41,11 @@ int main(void) {
     const int screenWidth = ATTR_PSP_WIDTH;
     const int screenHeight = ATTR_PSP_HEIGHT;
 
+    scePowerLock(0);
+
     InitWindow(screenWidth, screenHeight, "Watermelon Game");
     SDL_Init(SDL_INIT_AUDIO);
-    Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024);
+    Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048);
     
     Mix_Chunk* popSfx = Mix_LoadWAV("Resources/Pop.wav");
     Mix_Chunk* whooshSfx = Mix_LoadWAV("Resources/Whoosh.wav");
@@ -51,9 +55,12 @@ int main(void) {
 
     Mix_VolumeMusic(AudioVolume);
     Mix_PlayMusic(firstDropMusic, 0);
+    MusicTrack = 1;
     
     Texture2D fruitsTexture = LoadTexture("Resources/WatermelonGame.png");
-    SetTextureFilter(fruitsTexture, TEXTURE_FILTER_BILINEAR); 
+    SetTextureFilter(fruitsTexture, TEXTURE_FILTER_BILINEAR);
+
+    Font gameFont = LoadFontEx("resources/font.otf", 20, NULL, 0);
 
     {
         FILE* highscoreFile = fopen("highscore.txt", "rb+");
@@ -101,8 +108,12 @@ int main(void) {
     while (!WindowShouldClose()) {
         timerStart = sceKernelGetSystemTimeLow();
 
-        if (Mix_PlayingMusic() == 0) {
+        if (Mix_PlayingMusic() == 0 && MusicTrack == 1) {
             Mix_PlayMusic(smallFruitsMusic, 0);
+            MusicTrack = 2;
+        } else if (Mix_PlayingMusic() == 0 && MusicTrack == 2) {
+            Mix_PlayMusic(firstDropMusic, 0);
+            MusicTrack = 1;
         }
 
         DeltaTime = (((float) GetFrameTime()) * InvTicksPerFrame);
@@ -251,11 +262,14 @@ int main(void) {
 
         BeginDrawing();
         {
-            ClearBackground(RAYWHITE);
-            // ClearBackground(BackgroundColor);
+            ClearBackground(BackgroundColor);
+            DrawRectangle(0, screenHeight-30, screenWidth, 20, FloorTopColor);
+            DrawRectangle(0, screenHeight-10, screenWidth, 10, FloorBottomColor);
+
             drawBox();
 
-            DrawText(TextFormat("Next"), 390, 16, 20, BLACK);
+            // DrawText("Next", 390, 16, 20, OutlineColor);
+            DrawTextEx(gameFont, "Next", (Vector2){393,16}, 20.0, 2, OutlineColor);
             nextBall.x = BoxLeftMargin + BoxWidth + 2.51f;
             nextBall.y = BoxTopMargin + 0.4f + nextBall.r;
             drawBall(&nextBall, fruitsTexture);
@@ -274,11 +288,14 @@ int main(void) {
             fread(&highscore, sizeof(highscore), 1, highscoreFile);
             fclose(highscoreFile);
 
-            DrawText(TextFormat("Score\n %08i", DispScore), 16, 16, 20, BLACK);
-            DrawText(TextFormat("\n\nBest\n %08i", highscore), 16, 16, 20, GRAY);
+            // DrawText(TextFormat("Score\n %08i", DispScore), 16, 16, 20, OutlineColor);
+            // DrawText(TextFormat("\n\nBest\n %08i", highscore), 16, 16, 20, BROWN);
+            DrawTextEx(gameFont, TextFormat("Score:\n %08i", DispScore), (Vector2){16,16}, 20.0, 2, OutlineColor);
+            DrawTextEx(gameFont, TextFormat("\n\nBest:\n %08i", highscore), (Vector2){16,16}, 20.0, 2, BROWN);
 
             if (GameOver) {
-                DrawText(TextFormat("\n\n\n\n\nGame Over\nPress\n(START)\nto restart", DispScore), 16, 16, 20, RED);
+                // DrawText("\n\n\n\n\nGame Over\nPress\n(START)\nto restart", 16, 16, 20, RED);
+                DrawTextEx(gameFont, "\n\n\n\n\nGame Over\nPress START\nto restart", (Vector2){16,16}, 20.0, 2, RED);
             }
         }
         EndDrawing();

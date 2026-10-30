@@ -39,8 +39,25 @@ void drawBall(struct Ball * b, Texture2D fruitsTexture){
 
 
 void drawBox() {
-    DrawLine(BoxLeftMargin * PPU, BoxFloorY * PPU, (BoxLeftMargin+BoxWidth) * PPU, BoxFloorY * PPU, BLACK);
-    DrawLine(BoxLeftMargin * PPU, BoxTopMargin * PPU, BoxLeftMargin * PPU, (BoxTopMargin + BoxHeight) * PPU, BLACK);
-    DrawLine((BoxLeftMargin+BoxWidth) * PPU, BoxTopMargin * PPU, (BoxLeftMargin+BoxWidth) * PPU, (BoxTopMargin + BoxHeight) * PPU, BLACK);
+    DrawRectangle(BoxLeftMargin * PPU, ((BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight)) * PPU, BoxWidth * PPU, (BoxTopLineHeight + BoxDiagonalLineHeight) * PPU, BoxColor);
+
+    Vector2 v1 = {(BoxLeftMargin+BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU};
+    Vector2 v2 = {BoxLeftMargin * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU};
+    Vector2 v3 = {BoxLeftMargin * PPU, (BoxFloorY-BoxTopLineHeight) * PPU};
+    DrawTriangle(v1, v2, v3, BackgroundColor);
+
+    Vector2 v4 = {(BoxLeftMargin+BoxWidth) * PPU, (BoxFloorY-BoxTopLineHeight) * PPU};
+    Vector2 v5 = {(BoxLeftMargin+BoxWidth) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU};
+    Vector2 v6 = {(BoxLeftMargin+BoxWidth-BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU};
+    DrawTriangle(v4, v5, v6, BackgroundColor);
+
     DrawLine(BoxLeftMargin * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, (BoxLeftMargin+BoxWidth) * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, RED);
+
+    DrawLine(BoxLeftMargin * PPU, BoxFloorY * PPU, (BoxLeftMargin+BoxWidth) * PPU, BoxFloorY * PPU, OutlineColor);
+    DrawLine(BoxLeftMargin * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, BoxLeftMargin * PPU, (BoxTopMargin + BoxHeight) * PPU, OutlineColor);
+    DrawLine((BoxLeftMargin+BoxWidth) * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, (BoxLeftMargin+BoxWidth) * PPU, (BoxTopMargin+BoxHeight) * PPU, OutlineColor);
+
+    DrawLine(BoxLeftMargin * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, (BoxLeftMargin+BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU, OutlineColor);
+    DrawLine((BoxLeftMargin+BoxWidth) * PPU, (BoxFloorY-BoxTopLineHeight) * PPU, (BoxLeftMargin+BoxWidth-BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU, OutlineColor);
+    DrawLine((BoxLeftMargin+BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU, (BoxLeftMargin+BoxWidth-BoxDiagonalLineHeight) * PPU, (BoxFloorY-BoxTopLineHeight-BoxDiagonalLineHeight) * PPU, OutlineColor);
 }
