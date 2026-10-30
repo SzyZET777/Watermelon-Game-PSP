@@ -1,7 +1,7 @@
 # Watermelon Game PSP
 A port of Watermelon Game (Suika) for Sony PlayStation Portable (PSP) made with raylib library
 
-<img width="1452" height="818" alt="Screenshot 2026-09-30 at 15 20 11" src="https://github.com/user-attachments/assets/b19b27e3-2935-4f4a-89df-e7b28c70de91" />
+<img width="1315" height="796" alt="Screenshot 2026-10-30 at 22 11 10" src="https://github.com/user-attachments/assets/0b35af76-f6c8-4a92-b56f-3ac2eec0baf7" />
 
 ## Installation
 You must have CFW installed on your PSP - the game has been tested and works with ARK-4
