@@ -1,4 +1,5 @@
 #define SDL_MAIN_HANDLED
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
@@ -9,6 +10,7 @@
 #include <pspgu.h>
 #include <pspaudio.h>
 #include <psppower.h>
+#include <pspmscm.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -36,12 +38,50 @@ int AudioVolume = 64;
 bool GameOver = false;
 bool SelectPressed = false;
 
+const int quickSleep = 10000;
+const int longSleep = 10000;
+
+volatile bool SleepMode = false;
+volatile bool SleepModeStart = false;
+volatile bool SleepModeStarted = false;
+volatile bool SleepModeResume = false;
+
+
+int MyPowerCallback(int unknown, int pwrflags, void *common) {
+    if (pwrflags & (PSP_POWER_CB_SUSPENDING | PSP_POWER_CB_STANDBY)) {
+        SleepModeStarted = false;
+        SleepModeStart = true;
+        while (!SleepModeStarted) {
+            sceKernelDelayThread(quickSleep);
+        }
+    }
+    if (pwrflags & PSP_POWER_CB_RESUME_COMPLETE) {
+        SleepModeResume = true;
+    }
+    return 0;
+}
+
+
+int MyCallbackThread(SceSize args, void *argp) {
+    int cbid = sceKernelCreateCallback("Power Callback", MyPowerCallback, NULL);
+    int result = scePowerRegisterCallback(0, cbid);
+    TraceLog(LOG_INFO, "Power registration: %08X\n", result);
+    sceKernelSleepThreadCB(); 
+    return 0;
+}
+
+
+void MySetupCallbacks(void) {
+    int thid = sceKernelCreateThread("update_thread", MyCallbackThread, 0x11, 0x4000, 0, 0);
+    if (thid >= 0) sceKernelStartThread(thid, 0, 0);
+}
+
 
 int main(void) {
+    MySetupCallbacks();
+
     const int screenWidth = ATTR_PSP_WIDTH;
     const int screenHeight = ATTR_PSP_HEIGHT;
-
-    scePowerLock(0);
 
     InitWindow(screenWidth, screenHeight, "Watermelon Game");
     SDL_Init(SDL_INIT_AUDIO);
@@ -106,6 +146,75 @@ int main(void) {
     }
 
     while (!WindowShouldClose()) {
+        if (SleepModeStart) {
+            scePowerLock(0);
+
+            SleepModeStart = false;
+            SleepMode = true;
+
+            Mix_HaltMusic();
+            Mix_HaltChannel(-1);
+
+            Mix_FreeChunk(popSfx);
+            Mix_FreeChunk(whooshSfx);
+            Mix_FreeMusic(firstDropMusic);
+            Mix_FreeMusic(smallFruitsMusic);
+
+            popSfx = NULL;
+            whooshSfx = NULL;
+            firstDropMusic = NULL;
+            smallFruitsMusic = NULL;
+
+            Mix_CloseAudio();
+
+            sceKernelDelayThreadCB(longSleep); 
+            SleepModeStarted = true;
+
+            scePowerUnlock(0);
+        }
+
+        if (SleepModeResume) {
+            SleepModeResume = false;
+            SleepMode = false;
+
+            scePowerTick(0);
+            sceKernelDelayThread(longSleep);
+            Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048);
+
+            while (!(popSfx && whooshSfx && firstDropMusic && smallFruitsMusic)) {
+                popSfx = Mix_LoadWAV("Resources/Pop.wav");
+                whooshSfx = Mix_LoadWAV("Resources/Whoosh.wav");
+
+                firstDropMusic = Mix_LoadMUS("Resources/Watermelon Game - First Drop.mp3");
+                smallFruitsMusic = Mix_LoadMUS("Resources/Watermelon Game - Small Fruits.mp3");
+            
+                if (!(popSfx && whooshSfx && firstDropMusic && smallFruitsMusic)) {
+                    Mix_FreeChunk(popSfx);
+                    Mix_FreeChunk(whooshSfx);
+                    Mix_FreeMusic(firstDropMusic);
+                    Mix_FreeMusic(smallFruitsMusic);
+                    popSfx = NULL;
+                    whooshSfx = NULL;
+                    firstDropMusic = NULL;
+                    smallFruitsMusic = NULL;
+                    sceKernelDelayThread(longSleep);
+                }
+            }
+
+            if (MusicTrack == 1) {
+                Mix_PlayMusic(firstDropMusic, 0);
+            } else if (MusicTrack == 2) {
+                Mix_PlayMusic(smallFruitsMusic, 0);
+            }
+        }
+
+        if (SleepMode) {
+            sceKernelDelayThreadCB(quickSleep); 
+            continue;
+        }
+
+        scePowerTick(0);
+
         timerStart = sceKernelGetSystemTimeLow();
 
         if (Mix_PlayingMusic() == 0 && MusicTrack == 1) {
@@ -116,7 +225,12 @@ int main(void) {
             MusicTrack = 1;
         }
 
-        DeltaTime = (((float) GetFrameTime()) * InvTicksPerFrame);
+        DeltaTime = ((float) GetFrameTime()) * InvTicksPerFrame;
+
+        if (DeltaTime > (1.0f / 10.0f) * InvTicksPerFrame) {
+            DeltaTime = (1.0f / 10.0f) * InvTicksPerFrame;
+        }
+
         // TraceLog(LOG_INFO," DeltaTime = %f\n", DeltaTime);
         // TraceLog(LOG_INFO," FPS = %f\n", 1.0f/(0.0000001+(float)GetFrameTime()));
 
