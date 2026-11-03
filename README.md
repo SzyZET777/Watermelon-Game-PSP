@@ -16,7 +16,11 @@ You must have CFW installed on your PSP - the game has been tested and works wit
 - Press START to restart after a game over
 - Press SELECT to change the volume of the music
 
-(PSP can't be turned off while this game is running, quit the game to be able to turn off the system)
+## Warning!
+In the newest version (v1.0.1) I implemented the sleep mode, but it still needs more testing before it's stable.
+While debugging I have seen bugs that crashed my console and reset my XMB settings - it hasn't happened for me but they could potentially brick your console.
+They should be fixed by now but use the release (v1.0.0) version if you want to be extra safe.
+If you encounter any crashes or bugs in the game please report them!!!
 
 ## AI Usage
 I used AI to speed up learning how to use raylib and finding bugs in my code but I am against vibe coding.
